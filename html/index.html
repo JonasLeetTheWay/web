@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>ZingTouch + Fabric.js Example</title>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.5.1/fabric.min.js"></script> -->
+    <script>
+        (function () {
+            var fabricUrl = '../lib/fabric_with_gestures.js';
+            if (document.location.search.indexOf('load_fabric_from=') > -1) {
+                var match = document.location.search.match(/load_fabric_from=([^&]*)/);
+                if (match && match[1]) {
+                    fabricUrl = match[1];
+                }
+            }
+            document.write('<script src="' + fabricUrl + '"><\/script>');
+        })();
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            font-family: 'Helvetica', Arial;
+        }
+
+        #wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        #output {
+            background-color: #3B3B3B;
+            width: 100%;
+            display: block;
+            min-height: 30px;
+            padding: 10px;
+            font-size: 0.8em;
+            color: white;
+        }
+
+        #rotate-container {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            color: white;
+            cursor: pointer;
+        }
+
+        .rotatable {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #ball {
+            background-color: #fff;
+            width: 200px;
+            height: 200px;
+            font-size: 2rem;
+            background: linear-gradient(to left, #f46b45, #eea849);
+        }
+
+        #interaction {
+            position: fixed;
+            top: 0;
+            height: 100vh;
+            width: 100%;
+            z-index: 1000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <img id="image" id="img1"
+        src="https://www.pixelstalk.net/wp-content/uploads/2016/08/2560-x-1440-Image-HD-768x432.jpg"
+        style="display: none;">
+    
+    <!-- <button id="toggle-button">Toggle Rotation</button> -->
+    <div id="output"> Interaction meta will output here.</div>
+    <div id="wrapper">
+        <div id="rotate-container">
+            <div class="rotatable" id="ball">
+                <div style="text-align:center;">Rotate me <br> <span style="font-size:0.5em">(1 or
+                        2-Fingers)</span><br><i class="fa fa-undo" aria-hidden="true"></i></div>
+
+                <canvas id="canvas"></canvas>
+                <div id="test"></div>
+            </div>
+        </div>
+    </div>
+    <div id="interaction" style=""></div>
+
+</body>
+<script src="../lib/zingtouch.js"></script>
+<script>
+    var currentAngle = 15;
+    //Using a layer on top of the entire page for "fat-finger" detection on mobile devices.
+    var target = document.getElementById('interaction');
+    var region = new ZingTouch.Region(target);
+
+    region.bind(target, 'rotate', function (e) {
+        const testElements = document.getElementsByClassName("rotatable");
+        for (const rotatable of testElements) {
+            // console.log("rotatable:",rotatable);
+            currentAngle += e.detail.distanceFromLast;
+            rotatable.style.transform = 'rotate(' + currentAngle + 'deg)';
+
+            setOutput([
+                ['Gesture', 'Rotate'],
+                ['angle', Math.floor(e.detail.angle) + "°"],
+                ['distanceFromOrigin', Math.floor(e.detail.distanceFromOrigin) + "°"],
+                ['distanceFromLast', Math.floor(e.detail.distanceFromLast) + "°"]
+            ]);
+
+        }
+
+    });
+
+    region.bind(target, 'tap', function (e) {
+console.log(e.detail.events)
+            setOutput([
+                ['Gesture', 'Tap'],
+                ['e.detail',e.detail],
+            ]);
+
+        }
+
+    );
+
+    function setOutput(data) {
+        var outputStr = "> ";
+        for (var i = 0; i < data.length; i++) {
+            outputStr += data[i][0] + ": " + data[i][1] + ((i === data.length - 1) ? '' : ' , ');
+        }
+        var output = document.getElementById('output');
+        output.innerHTML = outputStr;
+    }
+
+    
+
+</script>
+<script>
+
+function disableScroll() {
+            // Get the current page scroll position
+            scrollTop =
+            window.pageYOffset || document.documentElement.scrollTop;
+            scrollLeft =
+            window.pageXOffset || document.documentElement.scrollLeft,
+          
+                // if any scroll is attempted,
+                // set this to the previous value
+                window.onscroll = function() {
+                    window.scrollTo(scrollLeft, scrollTop);
+                };
+        }
+          
+        function enableScroll() {
+            window.onscroll = function() {};
+        }
+
+</script>
+<script>
+    const canvas = new fabric.Canvas('canvas'); // a canvas tag with id="canvas"
+    canvas.selection = false;
+    const zt = new ZingTouch.Region(canvas.getElement());
+    const toggleButton = document.getElementById('toggle-button');
+
+    // Load image and add to canvas
+    canvas.setWidth(300)
+    canvas.setHeight(300)
+    // Add some random shapes to the canvas
+    const circle = new fabric.Circle({
+        radius: 50,
+        fill: 'blue',
+        left: 20,
+        top: 20
+    });
+
+    const rect = new fabric.Rect({
+        width: 10,
+        height: 10,
+        fill: 'green',
+        left: 40,
+        top: 30
+    });
+
+    canvas.add(circle, rect);
+</script>
+
+</html>

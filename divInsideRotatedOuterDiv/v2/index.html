@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Draggable Inner Div inside Rotated Outer Div</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #ddd;
+        }
+
+        #outer {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: rotate(40deg);
+            transform-origin: center center;
+            background-color: #fff;
+            width: 200px;
+            height: 200px;
+            margin-left: -100px;
+            margin-top: -100px;
+        }
+
+        #inner {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #f00;
+            width: 100px;
+            height: 100px;
+            cursor: move;
+        }
+
+        #point {
+            position: absolute;
+            background-color: #00f;
+            width: 10px;
+            height: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- <div id="outer">
+        <div id="inner"></div>
+    </div> -->
+
+    <svg viewBox="0 0 200 200">
+		<g id="outer">
+			<rect x="0" y="0" width="200" height="200" fill="none" />
+			<g>
+				<g transform="translate(100,100)">
+					<rect x="-50" y="-50" width="100" height="100" fill="#fff" />
+					<g id="inner">
+						<rect x="-50" y="-50" width="100" height="100" fill="#f00" />
+					</g>
+				</g>
+			</g>
+		</g>
+	</svg>
+
+    
+    <div id="point"></div>
+
+    <script>
+        function getCorrectedMousePosition(event) {
+            var outer = document.getElementById("outer");
+            var inner = document.getElementById("inner");
+            var point = document.getElementById("point");
+
+            // Get the local transform matrix of the inner element
+            var innerMatrix = inner.getCTM();
+
+            // Get the global transform matrix of the outer element by traversing the DOM tree
+            var outerMatrix = outer.getCTM();
+            var current = outer;
+            while (current = current.parentNode) {
+                if (current.nodeType == 1 && current.getAttribute("transform")) {
+                    outerMatrix = current.getCTM().multiply(outerMatrix);
+                }
+            }
+
+            // Invert the global transform matrix to get the correction matrix
+            var correctionMatrix = outerMatrix.inverse();
+
+            // Get the mouse position and apply the correction matrix
+            var mouse = point.ownerSVGElement.createSVGPoint();
+            mouse.x = event.clientX;
+            mouse.y = event.clientY;
+            mouse = mouse.matrixTransform(correctionMatrix);
+
+            return { x: mouse.x, y: mouse.y };
+        }
+
+        var inner = document.getElementById("inner");
+        var point = document.getElementById("point");
+
+        // Handle mouse down events on the inner element
+        inner.addEventListener("mousedown", function (event) {
+            event.preventDefault();
+
+            // Get the initial mouse position
+            var initialMousePosition = getCorrectedMousePosition(event);
+
+
+            // Handle mouse move events on the document
+            function handleMouseMove(event) {
+                // Get the current mouse position
+                var currentMousePosition = getCorrectedMousePosition(event);
+
+                // Calculate the position delta
+                var deltaX = currentMousePosition.x - initialMousePosition.x;
+                var deltaY = currentMousePosition.y - initialMousePosition.y;
+
+                // Update the position of the inner element
+                inner.style.left = (parseFloat(inner.style.left) || 0) + deltaX + "px";
+                inner.style.top = (parseFloat(inner.style.top) || 0) + deltaY + "px";
+
+                // Update the position of the point element
+                point.style.left = currentMousePosition.x - 5 + "px";
+                point.style.top = currentMousePosition.y - 5 + "px";
+
+                // Update the initial mouse position
+                initialMousePosition = currentMousePosition;
+            }
+
+            // Handle mouse up events on the document
+            function handleMouseUp(event) {
+                // Remove the mouse move and mouse up event listeners
+                document.removeEventListener("mousemove", handleMouseMove);
+                document.removeEventListener("mouseup", handleMouseUp);
+            }
+
+            // Add the mouse move and mouse up event listeners to the document
+            document.addEventListener("mousemove", handleMouseMove);
+            document.addEventListener("mouseup", handleMouseUp);
+        });
+
+    </script>
+</body>
+
+</html>

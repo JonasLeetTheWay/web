@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Draggable Inner Div in Rotated Outer Div</title>
+	<style type="text/css">
+		#outer {
+			position: relative;
+			left: 100px;
+			top: 100px;
+			width: 200px;
+			height: 200px;
+			transform: rotate(0deg);
+			background-color: #ddd;
+		}
+
+		#inner {
+			position: absolute;
+			left: 50%;
+			top: 50%;
+			transform: translate(-50%, -50%);
+			width: 100px;
+			height: 100px;
+			background-color: #666;
+			cursor: move;
+		}
+
+		#point {
+			position: absolute;
+			width: 10px;
+			height: 10px;
+			background-color: red;
+			border-radius: 50%;
+			pointer-events: none;
+			display: none;
+		}
+	</style>
+</head>
+<body>
+	<div id="outer">
+		<div id="inner"></div>
+	</div>
+	<div id="point"></div>
+
+	<script type="text/javascript">
+		// var rotated = document.getElementById("outer");
+		// var inRotated = document.getElementById("inner");
+		// var point = document.getElementById("point");
+
+		// var tapX = 0;
+		// var tapY = 0;
+
+		// inRotated.addEventListener('mousedown', function(e) {
+		// 	tapX = e.clientX;
+		// 	tapY = e.clientY;
+
+		// 	document.addEventListener('mousemove', mousemove);
+		// 	document.addEventListener('mouseup', mouseup);
+
+		// 	e.preventDefault();
+		// });
+
+		// function getRotationAngle(element) {
+		// 	var matrix = getComputedStyle(element, null).transform.split("(")[1].split(")")[0].split(",");
+		// 	var sin = parseFloat(matrix[0]);
+		// 	var cos = parseFloat(matrix[1]);
+		// 	var angle = Math.atan2(cos, sin) * (180 / Math.PI);
+		// 	return angle;
+		// }
+
+		// function getCorrectedClickForDivInRotatedDiv(currTapX,currTapY,rotatedDiv,e){
+
+		// 		var angle = getRotationAngle(rotatedDiv);
+
+		// 		var offsetX = e.clientX - currTapX;
+		// 		var offsetY = e.clientY - currTapY;
+
+		// 		var rad = angle * (Math.PI / 180);
+		// 		var x = (offsetX * Math.cos(rad)) + (offsetY * Math.sin(rad));
+		// 		var y = (-offsetX * Math.sin(rad)) + (offsetY * Math.cos(rad));
+				
+		// 		var finalX = (rotatedDiv.offsetWidth / 2) + x
+		// 		var finalY = (rotatedDiv.offsetHeight / 2) + y
+
+		// 		console.table({
+		// 			"e.clientX":e.clientX,
+		// 			"e.clientY":e.clientY,
+		// 			finalX,
+		// 			finalY
+		// 		})
+			
+		// 		return {
+		// 			x:finalX,
+		// 			y:finalY
+		// 		};
+				
+		// 	}
+			
+
+		// function mousemove(e) {
+		// 	let correctedClick = getCorrectedClickForDivInRotatedDiv(tapX,tapY,rotated,e)
+
+		// 	inRotated.style.left = correctedClick.x + 'px';
+		// 	inRotated.style.top = correctedClick.y + 'px';
+		// 	point.style.left = e.clientX + 'px';
+		// 	point.style.top = e.clientY + 'px';
+		// 	point.style.display = 'block';
+		// }
+
+		// function mouseup() {
+		// 	document.removeEventListener('mousemove', mousemove);
+		// 	document.removeEventListener('mouseup', mouseup);
+
+		// 	point.style.display = 'none';
+		// }
+		var rotated = document.getElementById("outer");
+        var inRotated = document.getElementById("inner");
+        var point = document.getElementById("point");
+
+        var tapX = 0;
+        var tapY = 0;
+
+        // handle click events
+        inRotated.addEventListener('mousedown', handleStart);
+        inRotated.addEventListener('mousemove', handleMove);
+        inRotated.addEventListener('mouseup', handleEnd);
+
+        // handle touch events
+        inRotated.addEventListener('touchstart', handleStart);
+        inRotated.addEventListener('touchmove', handleMove);
+        inRotated.addEventListener('touchend', handleEnd);
+
+        function handleStart(e) {
+            e.preventDefault();
+            if (e.type === 'mousedown') {
+                tapX = e.clientX;
+                tapY = e.clientY;
+            } else if (e.type === 'touchstart') {
+                tapX = e.touches[0].clientX;
+                tapY = e.touches[0].clientY;
+            }
+            // tapX*=0.5
+            // tapY*=0.5
+
+            let correctedClick = getCorrectedClickForDivInRotatedDiv(tapX, tapY, rotated, e);
+        }
+
+        function handleMove(e) {
+            e.preventDefault();
+            let correctedClick = getCorrectedClickForDivInRotatedDiv(tapX, tapY, rotated, e);
+            if (e.type === 'mousemove') {
+                inRotated.style.left = correctedClick.x + 'px';
+                inRotated.style.top = correctedClick.y + 'px';
+                point.style.left = e.clientX + 'px';
+                point.style.top = e.clientY + 'px';
+            } else if (e.type === 'touchmove') {
+                inRotated.style.left = correctedClick.x + 'px';
+                inRotated.style.top = correctedClick.y + 'px';
+                point.style.left = e.touches[0].clientX + 'px';
+                point.style.top = e.touches[0].clientY + 'px';
+            }
+        }
+
+        function handleEnd(e) {
+            e.preventDefault();
+            point.style.display = 'none';
+        }
+
+        function getRotationAngle(element) {
+            var matrix = getComputedStyle(element, null).transform.split("(")[1].split(")")[0].split(",");
+            var sin = parseFloat(matrix[0]);
+            var cos = parseFloat(matrix[1]);
+            var angle = Math.atan2(cos, sin) * (180 / Math.PI);
+            return angle;
+        }
+
+
+        function getCorrectedClickForDivInRotatedDiv(currTapX, currTapY, rotatedDiv, e) {
+            var angle = getRotationAngle(rotatedDiv);
+
+            var offsetX, offsetY;
+            var eX, eY
+            if (e.clientX && e.clientY) {
+                // Mouse event
+                offsetX = e.clientX - currTapX;
+                offsetY = e.clientY - currTapY;
+                eX=e.clientX;
+                eY=e.clientY;
+            } else if (e.touches[0].clientX && e.touches[0].clientY) {
+                // Touch event
+                offsetX = e.touches[0].clientX - currTapX;
+                offsetY = e.touches[0].clientY - currTapY;
+                eX=e.touches[0].clientX;
+                eY=e.touches[0].clientY;
+            }
+            
+
+            var rad = angle * (Math.PI / 180);
+            var x = offsetX * Math.cos(rad) + offsetY * Math.sin(rad);
+            var y = -offsetX * Math.sin(rad) + offsetY * Math.cos(rad);
+
+            var finalX = rotatedDiv.offsetWidth/2 + x;
+            var finalY = rotatedDiv.offsetHeight/2 + y;
+
+            // console.table({
+            //     currTapX,
+            //     currTapY,
+            //     // "offsetX": offsetX,
+            //     // "offsetY": offsetY,
+            //     "e.clientX": eX,
+            //     "e.clientY": eY,
+            //     finalX,
+            //     finalY,
+            // });
+
+            return {
+                x: finalX,
+                y: finalY,
+            };
+        }
+	</script>
+</body>
+</html>

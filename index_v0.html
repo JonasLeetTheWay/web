@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link rel="stylesheet" href="./styles.scss">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="./script.js" defer></script>
+    <style>
+        .dot {
+            background-color: red;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            position: absolute;
+            transform: translate(-50%, -50%);
+        }
+
+        #tophalf {
+            background-color: black;
+            height: 400px;
+        }
+
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="tophalf"></canvas>
+
+
+    <br>
+    <br>
+    <br>
+
+
+    <div id="nocontextmenu" oncontextmenu="return false;">
+        <input type="text" placeholder="map name" @bind-value="mapName">
+        <button id="CreateCanvasButton" > Load Map</button>
+    
+        <p></p>
+        <button class="btn btn-primary" id="SettingZoneButton" > Setting Zone </button>
+        <button class="btn btn-primary" id="AddKeepoutZoneButton" >Add Keepout Zone</button>
+    
+        <p></p>
+        <button class="btn btn-primary" id="ShowZoneInfoBtn" >Show Zone Infomation</button>
+        <button class="btn btn-primary" id="HideZoneInfoBtn" > Hide Zone Infomation</button>
+    
+        <p></p>
+        <input type="text" placeholder="polygon id" @bind-value="polygonId">
+        <button class="btn btn-primary" id="DeleteZoneButton" >Delete Zone</button>
+    </div>
+    
+    
+    
+    <p></p>
+    <div id="maindiv">
+        <div class="singlecanvasdiv">
+            <canvas class="backgroundcanvas" id="backgroundcanvas"></canvas>
+            <canvas class="drawcanvas" id="zoneCanvas"></canvas>
+        </div>
+    </div>
+</body>
+
+</html>
